@@ -26,7 +26,7 @@ Resultado (en `e1/data/bruto/`, ignorado por Git):
 from __future__ import annotations
 
 import argparse
-import sys
+import re
 import time
 import zipfile
 from pathlib import Path
@@ -36,9 +36,24 @@ import pyarrow as pa
 import pyarrow.csv as pv
 import pyarrow.dataset as ds
 import pyarrow.parquet as pq
+import requests
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from descarga import RDF_HISTORICO, RDF_UBICACION, catalogo, descargar  # noqa: E402
+RDF_HISTORICO = "https://datos.madrid.es/dataset/208627-0-transporte-ptomedida-historico.rdf"
+RDF_UBICACION = "https://datos.madrid.es/dataset/202468-0-intensidad-trafico.rdf"
+CABECERAS = {"User-Agent": "Mozilla/5.0"}
+
+MESES = {
+    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
+    "julio": 7, "agosto": 8, "septiembre": 9, "octubre": 10, "noviembre": 11,
+    "diciembre": 12,
+}
+_PATRON_DISTRIBUCION = re.compile(
+    r"<dct:description[^>]*>([^<]*)</dct:description>.*?"
+    r"<dcat:accessURL rdf:resource=\"([^\"]+)\"/>.*?"
+    r"<dcat:byteSize>(\d+)</dcat:byteSize>",
+    re.S,
+)
+_PATRON_MES = re.compile(r"(%s)\s+(?:de\s+)?(\d{4})" % "|".join(MESES), re.I)
 
 CARPETA = Path(__file__).resolve().parents[1] / "data" / "bruto"
 DESDE, HASTA = "2024-11", "2026-10"
@@ -55,6 +70,44 @@ TIPOS_TRAFICO = {
     "error": pa.string(),
     "periodo_integracion": pa.int32(),
 }
+
+
+def catalogo(url_rdf: str) -> pd.DataFrame:
+    """Lee el catálogo RDF del portal y devuelve un fichero por fila.
+
+    Las URL de descarga no siguen un patrón por fecha, así que se obtienen del
+    catálogo en lugar de escribirlas a mano.
+    """
+    texto = requests.get(url_rdf, headers=CABECERAS, timeout=60).text
+    filas = []
+    for bloque in texto.split("<dcat:Distribution ")[1:]:
+        m = _PATRON_DISTRIBUCION.search(bloque)
+        if not m:
+            continue
+        descripcion, url, tam = m.groups()
+        mes = _PATRON_MES.search(descripcion)
+        if not mes:
+            continue  # documentación asociada (PDF), no es un mes de datos
+        periodo = pd.Period(year=int(mes.group(2)), month=MESES[mes.group(1).lower()], freq="M")
+        filas.append(
+            {"mes": periodo, "formato": url.rsplit(".", 1)[-1].lower(), "url": url, "bytes": int(tam)}
+        )
+    return pd.DataFrame(filas).sort_values(["mes", "formato"]).reset_index(drop=True)
+
+
+def descargar(url: str, destino: Path) -> Path:
+    """Descarga en streaming a un fichero temporal y lo renombra al terminar."""
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    if destino.exists():
+        return destino
+    tmp = destino.with_suffix(destino.suffix + ".part")
+    with requests.get(url, headers=CABECERAS, stream=True, timeout=120) as r:
+        r.raise_for_status()
+        with open(tmp, "wb") as f:
+            for trozo in r.iter_content(chunk_size=1 << 20):
+                f.write(trozo)
+    tmp.rename(destino)
+    return destino
 
 
 def _csv_a_parquet(abrir, destino: Path, tipos: dict | None) -> int:
