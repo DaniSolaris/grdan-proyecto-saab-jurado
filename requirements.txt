@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy
+pyarrow
+requests
+matplotlib
+statsmodels
+statsforecast>=2.0
+utilsforecast>=0.2
+jupyter
+nbconvert
+ipykernel
