@@ -61,7 +61,8 @@ Solo mira hacia atrás, así que no introduce información del futuro. Afecta al
 ## Resultados principales
 
 - **Patrones.** Ciclo semanal dominante (sábado −23 %, domingo −31 %), agosto un tercio por debajo del resto del año,
-  y caídas de hasta el 50 % en festivos.
+  y caídas de hasta el 50 % en festivos. No hay ciclo mensual: se contrastó un posible efecto de principio de mes
+  (cobro de la nómina) y se descartó.
 - **Partición.** Prueba: 25–31 de octubre de 2026 (7 días, un horizonte). Validación: ventana rodante de 52 orígenes
   semanales. En E2 los modelos se elegirán con la ventana rodante y la semana de prueba se mirará una sola vez.
 - **Rival a batir.** *Seasonal naïve* con `season_length = 7`: MASE de 0,95 en la ventana rodante sobre el total, y el
