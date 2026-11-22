@@ -13,8 +13,8 @@ urbanos de Madrid, con un máximo de 2 años de histórico, para elegir las vent
 - **Cobertura:** desde 2013, unos 5.000 puntos de medida de la ciudad (urbanos, M-30 y un tercer grupo etiquetado `C30`). Se usan los 24 meses
   de noviembre de 2024 a octubre de 2026 y 200 puntos urbanos.
 - **Unidad:** intensidad en **vehículos/hora**. La serie diaria es la intensidad media del día en veh/h.
-- **Retraso de actualización:** se publica un fichero por mes, una vez cerrado. Octubre de 2026 ya estaba disponible
-  el 21 de noviembre de 2026, así que el retraso es de unas semanas. No sirve para seguir el tráfico en tiempo real.
+- **Retraso de actualización:** se publica un fichero por mes, una vez cerrado el mes, con unas semanas de retraso. No
+  sirve para seguir el tráfico en tiempo real.
 - **Licencia:** CC BY 4.0.
 - **Limitaciones:** los fallos no vienen marcados. La columna `error` vale siempre `N` en los puntos urbanos, y los
   sensores caídos aparecen como filas que faltan o como ceros. Hay lecturas imposibles (hasta 99.999 veh/h), días en
@@ -63,7 +63,7 @@ Solo mira hacia atrás, así que no introduce información del futuro. Afecta al
 - **Patrones.** Ciclo semanal dominante (sábado −23 %, domingo −31 %), agosto un tercio por debajo del resto del año,
   y caídas de hasta el 50 % en festivos.
 - **Partición.** Prueba: 25–31 de octubre de 2026 (7 días, un horizonte). Validación: ventana rodante de 52 orígenes
-  semanales.
+  semanales. En E2 los modelos se elegirán con la ventana rodante y la semana de prueba se mirará una sola vez.
 - **Rival a batir.** *Seasonal naïve* con `season_length = 7`: MASE de 0,95 en la ventana rodante sobre el total, y el
   mejor de los cuatro baselines en 195 de los 200 sensores.
 - **Dónde falla.** En las semanas con festivo y en las transiciones de vacaciones: el 6 % de los días concentra el

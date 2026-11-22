@@ -224,3 +224,6 @@ __marimo__/
 
 # Datos del proyecto (no se versionan)
 data/
+
+# macOS
+.DS_Store

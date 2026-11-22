@@ -194,8 +194,10 @@ def muestra(train: pd.DataFrame, n: int = 10) -> list[str]:
     return orden.index[posiciones].tolist()
 
 
-# Festivos de Madrid capital dentro del periodo. Lista manual, contrastada con las caídas
-# de tráfico que se ven en los datos (notebook 02); en E2 se tomará de una fuente oficial.
+# Festivos de Madrid capital dentro del periodo que caen de lunes a viernes. Los que caen en
+# sábado o domingo no se incluyen (p. ej. 1 nov 2025, 6 dic 2025, 2 may 2026, 15 ago 2026).
+# Lista manual, contrastada con las caídas de tráfico que se ven en los datos (notebook 02);
+# en E2 se tomará del calendario oficial.
 FESTIVOS = {
     "2024-11-01": "Todos los Santos", "2024-12-06": "Constitución", "2024-12-25": "Navidad",
     "2025-01-01": "Año Nuevo", "2025-01-06": "Reyes", "2025-04-17": "Jueves Santo", "2025-04-18": "Viernes Santo",
